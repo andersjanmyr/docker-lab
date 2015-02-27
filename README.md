@@ -33,7 +33,7 @@ Run some commands, create a couple of files, then exit.
 $ docker ps --all
 
 # List all running containers
-$ docker ps --all
+$ docker ps
 
 # List all container IDs
 $ docker ps --all -q
