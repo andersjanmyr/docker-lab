@@ -1,8 +1,27 @@
 # Docker Lab
 
+## Requirements
+
+* Linux
+* OS X
+* Windows 7.1, 8 or newer BUT NOT Windows 10.
+
+
 ## Install Docker
 
 https://docs.docker.com/installation/
+
+## TODO
+
+* Prepare test images
+* Inspect logs
+* Inspect container
+* Copy files from and to a container.
+* Start up a container with a database
+* Link to the database container
+* Docker compose
+* Docker machine
+* Docker swarm
 
 
 ## Use a simple throwaway container
