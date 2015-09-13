@@ -13,7 +13,6 @@ https://docs.docker.com/installation/
 
 ## TODO
 
-* Prepare test images
 * Inspect logs
 * Inspect container
 * Copy files from and to a container.
@@ -22,6 +21,20 @@ https://docs.docker.com/installation/
 * Docker compose
 * Docker machine
 * Docker swarm
+
+## Test Images
+
+* debian - Official Debian Image
+* ubuntu - Official Ubuntu Image
+* scratch - Base image for other images, 0 bytes
+* busybox - Minimal Linux distro, 2.5MB
+* redis - Official Redis image
+* mongo - Official Mongo image
+* postgres - Official Postgres image
+* jwilder/nginx-proxy - Nginx image with automatic proxy configuration of other
+  containers.
+* andersjanmyr/counter - Counter web-service with support for multiple
+  databases.
 
 
 ## Use a simple throwaway container
