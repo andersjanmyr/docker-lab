@@ -11,6 +11,20 @@
 
 https://docs.docker.com/installation/
 
+If you are running OSX or Windows add the IP address of the virtual machine to
+`/etc/hosts` to simplify interacting with it.
+
+```
+$ sudo vi /etc/hosts # or use another editor :)
+# Add the IP of the virtual machine
+192.168.99.100 docker.local
+# Exit and save with :wq or ZZ
+
+# Verify that it works
+$ ping docker.local
+# Exit with Ctrl-c
+```
+
 ## TODO
 
 * Inspect logs
