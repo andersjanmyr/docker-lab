@@ -42,6 +42,7 @@ $ ping docker.local
 * ubuntu - Official Ubuntu Image
 * scratch - Base image for other images, 0 bytes
 * busybox - Minimal Linux distro, 2.5MB
+* node - Official Node.js image
 * redis - Official Redis image
 * mongo - Official Mongo image
 * postgres - Official Postgres image
