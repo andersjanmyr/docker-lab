@@ -72,7 +72,8 @@ $ docker run -it busybox /bin/sh
 
 Same as before, but no `--rm` to remove the container once you exit.
 
-Run some commands, create a couple of files, then exit.
+Run some commands, create a couple of files, then exit `exit`-command or
+`Ctrl-D`
 
 ```
 # List all containers, including stopped
@@ -81,15 +82,31 @@ $ docker ps --all
 # List all running containers
 $ docker ps
 
-# List all container IDs
+# List all container IDs (-q quiet)
 $ docker ps --all -q
 
-# List latest container including stopped
+# List latest (-l) container, including stopped
 $ docker ps -l
 
-# Remove the latest container
-$ docker rm $(docker ps -l -q)
+# List ID of latest container
+$ docker ps -l -q
+
+# Start and attact to the stopped container
+$ docker start -ia $(docker ps -l -q)
+
+# Exit the container, exit or Ctrl-D
+
+# List the container and remember its name.
+# docker ps -a
+
+# List the logs of the container by name
+$ docker logs name-of-container # (drunk_perlman or similar)
+
+# Remove the container
+$ docker rm $(docker ps -l -q) # Or use the name
 ```
+
+
 
 ## Build an image interactively
 
