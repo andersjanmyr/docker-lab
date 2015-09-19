@@ -117,20 +117,64 @@ following sections.
 
 ```
 # Start a couple of detached (-d) Redis containers
-$ docker run -d redis
+$ docker run -d --name redis redis
 $ docker run -d redis::TODO
 
 # Start a couple of detached (-d) Mongo containers
-$ docker run -d mongo
+$ docker run -d --name mongo mongo
 $ docker run -d mongo:TODO
 
 # Start a detached (-d) Postgres container
-$ docker run -d postgres
+$ docker run -d --name postgres postgres
 
 # Check that the containers are running
 $ docker ps
 ```
 
+## Inspecting Containers
+
+In this section you will learn how to find information about the running
+containers with the commands `docker logs`, `docker inspect`, and `docker
+exec`.
+
+### Check the logs
+
+Most Docker images are configured to log to stdout. This is extremely useful
+since it make it very easy to check the logs of different images with  a simple
+command, `docker logs`.
+
+```
+# Find out the name of the running containers
+$ docker ps
+
+# Check the logs of some of the running database containers
+
+# List the logs of the Redis image
+$ docker logs redis
+
+# Follow (-f) the logs of the Mongo database
+$ docker logs -f mongo
+
+# List the logs of the Postgres images with docker timestamps (-t)
+$ docker logs -t postgres
+```
+
+### Inspect the containers
+
+Containers, both running and stopped, can be inspected with `docker inspect`.
+`docker inspect` lists information about the container in a JSON format. Since
+the command outputs *a lot* of information it can be useful with some
+additional tools for finding the information.
+
+* grep - for finding the right information.
+* jq - for flexible JSON parsing.
+
+```
+# Inspect the running Redis container
+$ docker inspect redis
+```
+
+## Build Images
 
 
 ## Build an image interactively
