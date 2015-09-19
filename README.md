@@ -51,8 +51,11 @@ $ ping docker.local
 * andersjanmyr/counter - Counter web-service with support for multiple
   databases.
 
+## Running Containers
 
-## Use a simple throwaway container
+In this section you will learn how to start and stop containers.
+
+### Use a simple throwaway container
 
 ```
 $ docker run -it --rm busybox /bin/sh
@@ -65,7 +68,7 @@ $ docker run -it --rm busybox /bin/sh
 * `/bin/sh` - The command to run, start a shell.
 
 
-## Use a simple "persistent" container
+### Use a simple "persistent" container
 
 ```
 $ docker run -it busybox /bin/sh
@@ -105,6 +108,27 @@ $ docker logs name-of-container # (drunk_perlman or similar)
 
 # Remove the container
 $ docker rm $(docker ps -l -q) # Or use the name
+```
+
+### Start some database containers
+
+In this section you will start up some containers that you can work with in the
+following sections.
+
+```
+# Start a couple of detached (-d) Redis containers
+$ docker run -d redis
+$ docker run -d redis::TODO
+
+# Start a couple of detached (-d) Mongo containers
+$ docker run -d mongo
+$ docker run -d mongo:TODO
+
+# Start a detached (-d) Postgres container
+$ docker run -d postgres
+
+# Check that the containers are running
+$ docker ps
 ```
 
 
