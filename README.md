@@ -166,12 +166,32 @@ Containers, both running and stopped, can be inspected with `docker inspect`.
 the command outputs *a lot* of information it can be useful with some
 additional tools for finding the information.
 
-* grep - for finding the right information.
-* jq - for flexible JSON parsing.
+* grep - for finding the information when you don't know the exact path.
+* [jq](https://stedolan.github.io/jq/) - for flexible JSON parsing and pretty-printing.
 
 ```
-# Inspect the running Redis container
+# Inspect the Redis container
 $ docker inspect redis
+
+# Get the hostname of the Redis container
+$ docker inspect --format '{{.Config.Hostname}}' redis
+
+# Find everything with Host in the name with `grep`
+# This is useful if you don't know exectly what you are looking for
+$ docker inspect redis | grep Host
+
+# Add a few lines of context to help figure out the path to it
+$ docker inspect redis | grep Host -C2
+
+# List the entire Config object with `json`
+$ docker inspect --format '{{json .Config}}' redis
+
+# Add `jq` to pretty-print the JSON
+$ docker inspect --format '{{json .Config}}' redis |jq
+
+# Or use `jq` without format
+# Note that you have to start with .[] to get into the outer array
+$ docker inspect redis |jq .[].Config
 ```
 
 ## Build Images
