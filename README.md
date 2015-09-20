@@ -140,7 +140,7 @@ exec`.
 ### Check the logs
 
 Most Docker images are configured to log to stdout. This is extremely useful
-since it make it very easy to check the logs of different images with  a simple
+since it makes it very easy to check the logs of different images with  a simple
 command, `docker logs`.
 
 ```
