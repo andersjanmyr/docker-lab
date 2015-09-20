@@ -27,8 +27,6 @@ $ ping docker.local
 
 ## TODO
 
-* Inspect logs
-* Inspect container
 * Copy files from and to a container.
 * Start up a container with a database
 * Link to the database container
@@ -213,7 +211,6 @@ Here's a small guide to the most interesting parts of the output.
 
 
 
-
 #### Exercises
 
 Inspect the database containers to find out the following information.
@@ -226,6 +223,59 @@ Inspect the database containers to find out the following information.
 
 
 ### Getting inside the Containers with docker exec
+
+It can be very useful to get inside a running container to examine the files
+inside it to see how it is working. `docker exec` lets you do this.
+
+```
+# Start a bash shell inside the Mongo container
+$ docker exec -it mongo bash
+
+# Get the environment variables of the Postgres container
+$ docker exec postgres env
+
+# List the contents of the file that is starting the Redis container
+$ docker exec redis cat /entrypoint.sh
+```
+
+#### Exercises
+
+`exec` into the running containers to find out:
+
+* What environments variables, `env`, are set in the containers?
+* What files, `ls`, are in the working directory of the containers?
+
+### Getting files out of a container
+
+To find out what files are in a container it is sometimes useful to export the
+files to a tar-archive.
+
+```
+# Export files of Redis container to an archive
+$ docker export redis > redis.tgz
+
+# List the files in the archive
+$ tar tzf redis.tgz
+```
+
+If you know the name of a file, you can copy it out of the container. This is
+useful if you have build-containers, containers that are used to build
+something instead of running it.
+
+```
+# Run a docker container that builds the files in /src and outputs into /dist
+$ docker run --name builder -v .:/src andersjanmyr/build-binary
+
+# Copy the binary to the current directory
+$ docker cp builder:/dist/binary .
+```
+
+`docker cp` can also be used to put files into the container.
+
+```
+# Copy a config file into the nginx container
+$ docker cp nginx.conf nginx:/etc/nginx/nginx.conf
+```
 
 
 
