@@ -194,6 +194,41 @@ $ docker inspect --format '{{json .Config}}' redis |jq
 $ docker inspect redis |jq .[].Config
 ```
 
+It is useful to learn more about the information provided by `docker inspect`.
+Here's a small guide to the most interesting parts of the output.
+
+* `Name` - the name of the container.
+* `Path` - the command that started the container.
+* `Args` - the arguments to the command.
+* `Config` - the containers view of the configuration, a merge of data from the
+  Dockerfile, and values that have been added on the command line, such as
+  `--env`, `--workdir`, `--tty`, etc.
+* `HostConfig` - the hosts view of the container. This maps well to the host
+  options given at the command-line, such as `--publish`, `--memory`,
+  `--privileged`, `--cpu*`, `--volume`, `--link`,  etc.
+* `Networking` - Networking settings, `IPAddress`, and `Ports` are particularly
+  useful.
+* `Mounts` - the mounted volumes
+* `State` - the state of the container, running, stopped, etc.
+
+
+
+
+#### Exercises
+
+Inspect the database containers to find out the following information.
+
+* What environments variables, `Env`, are available in the containers?
+* What ports are exposed, `ExposedPorts`, in the containers?
+* What command, `Cmd` and `EntryPoint`, is configured to start the container?
+* What command, `Path` and `Arg`, is used to start the container?
+* What volumes, `Mounts`, are mounted in the containers?
+
+
+### Getting inside the Containers with docker exec
+
+
+
 ## Build Images
 
 
