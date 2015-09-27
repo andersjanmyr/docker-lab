@@ -27,8 +27,6 @@ $ ping docker.local
 
 ## TODO
 
-* Copy files from and to a container.
-* Start up a container with a database
 * Link to the database container
 * Docker compose
 * Docker machine
@@ -209,8 +207,6 @@ Here's a small guide to the most interesting parts of the output.
 * `Mounts` - the mounted volumes
 * `State` - the state of the container, running, stopped, etc.
 
-
-
 #### Exercises
 
 Inspect the database containers to find out the following information.
@@ -278,11 +274,41 @@ $ docker cp nginx.conf nginx:/etc/nginx/nginx.conf
 ```
 
 
+## Dockerfiles
 
-## Build Images
+Now it is time to take a look at some Dockerfiles. Read the Dockerfiles of the
+following images and answer the questions about them.
+
+* [Postgres](https://hub.docker.com/_/postgres/)
+* [Redis](https://hub.docker.com/_/redis/)
+* [nginx-proxy](https://hub.docker.com/r/jwilder/nginx-proxy/~/dockerfile/)
+* [Counter](https://github.com/andersjanmyr/counter/blob/master/Dockerfile)
+
+### Questions
+
+* What image is the Dockerfile based on?
+* What environment variables does it set?
+* What ports does it expose?
+* What volumes does it mount?
+* What command starts the container?
 
 
-## Build an image interactively
+## Building Images
+
+In this section you will learn how to build your own images. Images can be
+created both interactively or with a Dockerfile. 
+
+
+### Build an image interactively
+
+Building an image interactively is good for experimentation. It allows you to
+run commands inside a running container and then just save the image. Once you
+have figured out what commands are needed for your image it is better to create
+the image from a Dockerfile.
+
+#### Exercise
+
+Build an image interactively then commit it with a tag.
 
 ```
 # Start a debian image or (ubuntu)
@@ -298,15 +324,14 @@ $ docker ps -l -q
 # Commit the image
 $ docker commit 38bbf0b3eb74 yourname:atag
 
+# List your new image
 $ docker images
 REPOSITORY               TAG         IMAGE ID            CREATED             VIRTUAL SIZE
 yourname                 atag        06c6650f1766        3 seconds ago       2.433 MB
-lifelog/nginx-confd      latest      7b181acb34c6        About an hour ago   225.9 MB
-lifelog/nginx-confd      v1.0.0      7b181acb34c6        About an hour ago   225.9 MB
 ...
 ```
 
-## Build an image with a Dockerfile
+### Build an image with a Dockerfile
 
 ```
 $ mkdir mydir
@@ -314,6 +339,7 @@ $ cd mydir
 $ vi Dockerfile
 $ docker build -t yourname:btag .
 ```
+
 
 ## Containers with environment variables
 
