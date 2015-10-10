@@ -13,8 +13,9 @@ https://docs.docker.com/installation/
 
 If you are running OSX or Windows add the IP address of the virtual machine to
 `/etc/hosts` to simplify interacting with it.
-
+192.168.99.100 docker.local
 ```
+
 $ sudo vi /etc/hosts # or use another editor :)
 # Add the IP of the virtual machine
 192.168.99.100 docker.local
@@ -23,6 +24,12 @@ $ sudo vi /etc/hosts # or use another editor :)
 # Verify that it works
 $ ping docker.local
 # Exit with Ctrl-c
+
+# If ping works, also add these to /etc/hosts. They will be used later in the lab
+192.168.99.100 counter.local
+192.168.99.100 redis-counter.local
+192.168.99.100 mongo-counter.local
+192.168.99.100 postgres-counter.local
 ```
 
 ## TODO
@@ -106,22 +113,42 @@ $ docker logs name-of-container # (drunk_perlman or similar)
 $ docker rm $(docker ps -l -q) # Or use the name
 ```
 
-### Start some database containers
+### Start some containers
 
 In this section you will start up some containers that you can work with in the
 following sections.
 
 ```
-# Start a couple of detached (-d) Redis containers
-$ docker run -d --name redis redis
-$ docker run -d redis::TODO
+# Start a detached (-d) Redis container named redis with its /data volume
+# mounted on directory ./data/redis
+$ docker run -d --name redis -v $PWD/data/redis:/data redis
 
-# Start a couple of detached (-d) Mongo containers
-$ docker run -d --name mongo mongo
-$ docker run -d mongo:TODO
+# Start a Mongo container with it's /data/db volume mounted on ./data/mongo
+$ docker run -d --name mongo -v $PWD/data/mongo:/data/db mongo
 
-# Start a detached (-d) Postgres container
+# Start a Postgres container
 $ docker run -d --name postgres postgres
+
+# Start an Nginx container with port published on 8080 (-p) and the docker
+# socket mounted as a read-only volume
+$ docker run -d -p 8080:80 \
+  -v /var/run/docker.sock:/tmp/docker.sock:ro \
+  --name nginx \
+  jwilder/nginx-proxy
+
+# Browse to the container
+$ open docker.local:8080
+
+# $ Start a counter web app linked to redis with a VIRTUAL_HOST environment
+# variable set to redis-counter.local and port published on 8081
+$ docker run -d --link redis -e REDIS_URL=redis:6379 \
+  -e VIRTUAL_HOST=redis-counter.local \
+  -p 8081:80 \
+  --name redis-counter \
+  andersjanmyr/counter
+
+# Browse to the container
+$ open docker.local:8081
 
 # Check that the containers are running
 $ docker ps
