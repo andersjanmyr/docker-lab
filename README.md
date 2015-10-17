@@ -13,28 +13,30 @@ https://docs.docker.com/installation/
 
 If you are running OSX or Windows add the IP address of the virtual machine to
 `/etc/hosts` to simplify interacting with it.
-192.168.99.100 docker.local
+192.168.99.100 docker
 ```
 
 $ sudo vi /etc/hosts # or use another editor :)
 # Add the IP of the virtual machine
-192.168.99.100 docker.local
+192.168.99.100 docker
 # Exit and save with :wq or ZZ
 
 # Verify that it works
-$ ping docker.local
+$ ping docker
 # Exit with Ctrl-c
 
 # If ping works, also add these to /etc/hosts. They will be used later in the lab
-192.168.99.100 counter.local
-192.168.99.100 redis-counter.local
-192.168.99.100 mongo-counter.local
-192.168.99.100 postgres-counter.local
+192.168.99.100 memory-counter.docker
+192.168.99.100 redis-counter.docker
+192.168.99.100 mongo-counter.docker
+192.168.99.100 postgres-counter.docker
 ```
 
 ## TODO
 
-* Link to the database container
+* Quick reference docker run
+* Quick reference docker build/Dockerfile
+* Dockerfiles lab
 * Docker compose
 * Docker machine
 * Docker swarm
@@ -137,18 +139,39 @@ $ docker run -d -p 8080:80 \
   jwilder/nginx-proxy
 
 # Browse to the container
-$ open docker.local:8080
+$ open docker:8080
 
 # $ Start a counter web app linked to redis with a VIRTUAL_HOST environment
-# variable set to redis-counter.local and port published on 8081
-$ docker run -d --link redis -e REDIS_URL=redis:6379 \
-  -e VIRTUAL_HOST=redis-counter.local \
+# variable set to redis-counter.docker and port published on 8081
+$ docker run -d \
+  -e VIRTUAL_HOST=memory-counter.docker \
   -p 8081:80 \
+  --name memory-counter \
+  andersjanmyr/counter
+
+# $ Start a counter web app linked to redis with a VIRTUAL_HOST environment
+# variable set to redis-counter.docker and port published on 8082
+$ docker run -d --link redis -e REDIS_URL=redis:6379 \
+  -e VIRTUAL_HOST=redis-counter.docker \
+  -p 8082:80 \
   --name redis-counter \
   andersjanmyr/counter
 
-# Browse to the container
-$ open docker.local:8081
+# $ Start a counter web app linked to postgres with a VIRTUAL_HOST environment
+# variable set to postgres-counter.docker and port published on 8083
+$ docker run -d --link postgres \
+  -e POSTGRES_URL=postgres://postgres@postgres \
+  -e VIRTUAL_HOST=postgres-counter.docker \
+  -p 8083:80 \
+  andersjanmyr/counter
+
+# $ Start a counter web app linked to mongo with a VIRTUAL_HOST environment
+# variable set to mongo-counter.docker and port published on 8084
+$ docker run -d --link mongo \
+  -e MONGO_URL=mongo:27017
+  -e VIRTUAL_HOST=mongo-counter.docker \
+  -p 8084:80 \
+  andersjanmyr/counter
 
 # Check that the containers are running
 $ docker ps
