@@ -259,7 +259,7 @@ Here's a small guide to the most interesting parts of the output.
 
 #### Exercises
 
-Inspect the database containers to find out the following information.
+Inspect the containers to find out the following information.
 
 * What environments variables, `Env`, are available in the containers?
 * What ports are exposed, `ExposedPorts`, in the containers?
@@ -290,6 +290,9 @@ $ docker exec redis cat /entrypoint.sh
 
 * What environments variables, `env`, are set in the containers?
 * What files, `ls`, are in the working directory of the containers?
+* What hostnames are available in `/etc/hosts`?
+* Where do the hostnames come from?
+* It may not be possible to get into some of the containers, why is this?
 
 ### Getting files out of a container
 
@@ -305,22 +308,24 @@ $ tar tzf redis.tgz
 ```
 
 If you know the name of a file, you can copy it out of the container. This is
-useful if you have build-containers, containers that are used to build
-something instead of running it.
+useful if you have containers that do not contain commands that allow you to
+`exec` into them. It is also useful for build-containers, containers that are
+used to build something instead of running it.
 
 ```
-# Run a docker container that builds the files in /src and outputs into /dist
-$ docker run --name builder -v .:/src andersjanmyr/build-binary
+# Copy the /etc/hosts out of redis-counter
+$ docker cp redis-counter:/etc/hosts .
 
-# Copy the binary to the current directory
-$ docker cp builder:/dist/binary .
+# List the contents of the copied file
+$ cat hosts
 ```
 
 `docker cp` can also be used to put files into the container.
 
 ```
-# Copy a config file into the nginx container
-$ docker cp nginx.conf nginx:/etc/nginx/nginx.conf
+# Add a hostname to the hosts file and copy it back again
+echo '74.125.232.127 tapir' >> hosts
+$ docker cp hosts redis-counter:/etc/hosts
 ```
 
 
@@ -346,7 +351,7 @@ following images and answer the questions about them.
 ## Building Images
 
 In this section you will learn how to build your own images. Images can be
-created both interactively or with a Dockerfile. 
+created both interactively or with a Dockerfile.
 
 
 ### Build an image interactively
@@ -362,7 +367,7 @@ Build an image interactively then commit it with a tag.
 
 ```
 # Start a debian image or (ubuntu)
-$ docker run -it debian:jessie /bin/bash
+$ docker run -it debian /bin/bash
 
 # Install some stuff
 ...
@@ -381,59 +386,30 @@ yourname                 atag        06c6650f1766        3 seconds ago       2.4
 ...
 ```
 
-### Build an image with a Dockerfile
+### Build an image from a Dockerfile
+
+Here is a short snippet of commands to get you started with creating your own
+image from a Dockerfile.
 
 ```
 $ mkdir mydir
 $ cd mydir
-$ vi Dockerfile
-$ docker build -t yourname:btag .
+$ echo 'FROM: debian' > Dockerfile
+$ docker build -t yourname:atag .
 ```
 
+#### Exercises
 
-## Containers with environment variables
+* Create an image that runs a web service. Here are some useful images:
+  [node](https://hub.docker.com/_/node/), [nginx](https://hub.docker.com/_/nginx/),
+  [java](https://hub.docker.com/_/java/), [maven](https://hub.docker.com/_/maven/),
+  [ruby](https://hub.docker.com/_/ruby/), [python](https://hub.docker.com/_/python/).
+  It is often useful to start with an `ONBUILD` image, if one exists.
+* Create an image that runs as a tool. If you have no ideas of your own, try to make a
+  `git` or an `ls` image. A tool image is configured like this:
+  - It uses `ENTRYPOINT` to set to the command to run.
+  - It uses `CMD` to set the default options.
+  Check out [redis](https://github.com/docker-library/redis/tree/master/3.0)
+  for an example.
+*
 
-* Use `docker run -e VARIABLE=VALUE`
-* Use `ENV` in Dockerfile
-* Use `docker run --env-file env`
-
-```
-```
-
-## Containers with ports
-
-* Use `docker run -p 8080:80`
-* Use `docker run -p 8080`
-* Use `EXPOSE` in Dockerfile
-* Use `docker --link`
-
-```
-```
-
-## Containers with volumes
-
-* Use `docker run -v $(PWD):/tmp/local`
-* Use `docker run -v /tmp/whereami`
-* Use `VOLUME` in Dockerfile
-* Use `docker --volumes-from`
-
-```
-```
-
-# Core OS
-
-
-## Start a Core OS cluster
-
-https://coreos.com/docs/quickstart/
-
-## Create some more advanced services
-
-https://coreos.com/docs/launching-containers/launching/launching-containers-fleet
-
-## Write a service that uses etcd and launch it into the cluster
-
-* Länka ihop med en environment variables
-* Använda volumer
-* Använda --link
-* Använda --volumes-from
