@@ -131,15 +131,15 @@ $ docker run -d --name mongo -v $PWD/data/mongo:/data/db mongo
 # Start a Postgres container
 $ docker run -d --name postgres postgres
 
-# Start an Nginx container with port published on 8080 (-p) and the docker
+# Start an Nginx container with port published on 80 (-p) and the docker
 # socket mounted as a read-only volume
-$ docker run -d -p 8080:80 \
+$ docker run -d -p 80:80 \
   -v /var/run/docker.sock:/tmp/docker.sock:ro \
   --name nginx \
   jwilder/nginx-proxy
 
 # Browse to the container
-$ open docker:8080
+$ open docker
 
 # $ Start a counter web app linked to redis with a VIRTUAL_HOST environment
 # variable set to redis-counter.docker and port published on 8081
