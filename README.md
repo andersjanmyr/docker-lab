@@ -125,8 +125,8 @@ following sections.
 # mounted on directory ./data/redis
 $ docker run -d --name redis -v $PWD/data/redis:/data redis
 
-# Start a Mongo container with it's /data/db volume mounted on ./data/mongo
-$ docker run -d --name mongo -v $PWD/data/mongo:/data/db mongo
+# Start a Mongo container
+$ docker run -d --name mongo mongo
 
 # Start a Postgres container
 $ docker run -d --name postgres postgres
@@ -168,7 +168,7 @@ $ docker run -d --link postgres \
 # $ Start a counter web app linked to mongo with a VIRTUAL_HOST environment
 # variable set to mongo-counter.docker and port published on 8084
 $ docker run -d --link mongo \
-  -e MONGO_URL=mongo:27017
+  -e MONGO_URL=mongo:27017 \
   -e VIRTUAL_HOST=mongo-counter.docker \
   -p 8084:80 \
   andersjanmyr/counter
