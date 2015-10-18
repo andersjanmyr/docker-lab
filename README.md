@@ -485,4 +485,74 @@ $ touch docker-compose.yml
 $ <edit> docker-compose.yml
 ```
 
+### docker-compose.yml
+
+`docker-compose` is a tool for managing multiple containers. The containers are
+defined in a `docker-compose.yml` file.
+
+```
+# Output trimmed for readability
+$ docker-compose -h
+Commands:
+  build              Build or rebuild services
+  kill               Kill containers
+  logs               View output from containers
+  ps                 List containers
+  rm                 Remove stopped containers
+  run                Run a one-off command
+  scale              Set number of containers for a service
+  start              Start services in background
+  stop               Stop services
+  up                 Create and start containers in foreground
+```
+
+```
+A simple docker-compose.yml file
+# The name at the root (redis) can be used when referring to the container
+# within this file.
+redis:
+  image: redis
+  volumes:
+    - ./data/redis:/data
+
+redis-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - REDIS_URL=redis:6379
+    - VIRTUAL_HOST=redis-counter.docker
+  links:
+    - redis:redis
+```
+
+The configuration format is thoroughly described at the [docker-compose.yml
+page at docker.com](https://docs.docker.com/compose/yml/).
+
+When working with `docker-compose` it is frequently necessary to remove and
+recreate all the containers. This is done with `docker-compose stop`, then
+`docker-compose rm`. Remember that `docker-compose up` is needed to recreate
+the containers.
+
+It is simple to use `docker-compose` to interact with all the containers at the
+same time, but it can also be used to interact with single containers. To get
+the logs from the nginx container use `docker-compose logs nginx`
+
+It is also possible to use the normal `docker` command to interact and debug
+individual containers. Just notice that the name of the containers are
+prefixed. `docker -it exec` is an invaluable tool for checking out what is
+going on in the containers.
+
+
+### Exercises
+
+* Kill and remove all existing containers, `docker rm -f $(docker ps -qa)`.
+* Create a `docker-compose.yml` similar to the example above, that starts all
+  the containers from above, `redis`, `postgres`, `mongo`, `nginx`,
+  `memory-counter`, `redis-counter`, `mongo-counter`, and `posrgres-counter`.
+* List the logs from specific containers with `docker-compose <name>`
+* Scale the counter containers, example `docker-compose scale redis-counter=2`
+* If it didn't work, what can you do to make it work?
+* When the scaling works, check out the nginx config,
+  `/etc/nginx/conf.d/default.conf`. What has happened?
 
