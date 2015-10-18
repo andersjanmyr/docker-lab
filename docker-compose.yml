@@ -1,0 +1,57 @@
+redis:
+  image: redis
+  volumes:
+    - ./data/redis:/data
+
+mongo:
+  image: mongo
+  volumes:
+    - ./data/mongo:/data/db
+
+postgres:
+  image: postgres
+
+nginx:
+  image: jwilder/nginx-proxy
+  volumes:
+    - /var/run/docker.sock:/tmp/docker.sock:ro
+  ports:
+    - "80:80"
+
+memory-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "8081:80"
+  environment:
+    - VIRTUAL_HOST=memory-counter.docker
+
+redis-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "8082:80"
+  environment:
+    - REDIS_URL=redis:6379
+    - VIRTUAL_HOST=redis-counter.docker
+  links:
+    - redis:redis
+
+postgres-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "8083:80"
+  environment:
+    - POSTGRES_URL=postgres://postgres@postgres
+    - VIRTUAL_HOST=postgres-counter.docker
+  links:
+    - postgres:postgres
+
+mongo-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "8084:80"
+  environment:
+    - MONGO_URL=mongo:27017
+    - VIRTUAL_HOST=mongo-counter.docker
+  links:
+    - mongo:mongo
+
