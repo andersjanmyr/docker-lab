@@ -19,14 +19,14 @@ nginx:
 memory-counter:
   image: andersjanmyr/counter
   ports:
-    - "8081:80"
+    - "80"
   environment:
     - VIRTUAL_HOST=memory-counter.docker
 
 redis-counter:
   image: andersjanmyr/counter
   ports:
-    - "8082:80"
+    - "80"
   environment:
     - REDIS_URL=redis:6379
     - VIRTUAL_HOST=redis-counter.docker
@@ -36,7 +36,7 @@ redis-counter:
 postgres-counter:
   image: andersjanmyr/counter
   ports:
-    - "8083:80"
+    - "80"
   environment:
     - POSTGRES_URL=postgres://postgres@postgres
     - VIRTUAL_HOST=postgres-counter.docker
@@ -46,7 +46,7 @@ postgres-counter:
 mongo-counter:
   image: andersjanmyr/counter
   ports:
-    - "8084:80"
+    - "80"
   environment:
     - MONGO_URL=mongo:27017
     - VIRTUAL_HOST=mongo-counter.docker
