@@ -125,11 +125,44 @@ following sections.
 # mounted on directory ./data/redis
 $ docker run -d --name redis -v $PWD/data/redis:/data redis
 
+# To connect to the redis database with a redis-cli you can use the same image
+# Start an interactive (-it) container, that will be removed on exit (--rm),
+# link it to the redis container above (--link redis), run the redis image (redis)
+# override the command with redis-cli and connect to the linked redis host
+# (redis-cli -h redis)
+$ docker run -it --rm --link redis redis redis-cli -h redis
+
+# For help with redis-cli, try
+$ docker run -it --rm redis redis-cli --help
+
+
 # Start a Mongo container
 $ docker run -d --name mongo mongo
 
+# To connect to mongo, use the same technique as to connect to redis above
+# Start an interactive (-it) container, that will be removed on exit (--rm),
+# link it to the mongo container above (--link mongo), run the mongo image (mongo)
+# override the command with mongo and connect to the linked mongo host
+# (mongo --host mongo)
+$ docker run -it --rm --link mongo mongo mongo --host mongo
+
+# For help with mongo-shell
+$ docker run -it --rm mongo mongo --help
+
+
 # Start a Postgres container
 $ docker run -d --name postgres postgres
+
+# To connect to postgres, use the same technique again
+# Start an interactive (-it) container, that will be removed on exit (--rm),
+# link it to the postgres container (--link postgres), run the postgres image (postgres)
+# override the command with psql and connect to the linked psql host
+# (psql --host postgres -U postgres), username -U is required
+$ docker run -it --rm --link postgres postgres psql -h postgres -U postgres
+
+# For help with psql
+$ docker run -it --rm postgres psql --help
+
 
 # Start an Nginx container with port published on 80 (-p) and the docker
 # socket mounted as a read-only volume
@@ -141,13 +174,16 @@ $ docker run -d -p 80:80 \
 # Browse to the container
 $ open docker
 
-# $ Start a counter web app linked to redis with a VIRTUAL_HOST environment
-# variable set to redis-counter.docker and port published on 8081
+# $ Start a counter web app with a VIRTUAL_HOST environment
+# variable set to memory-counter.docker and port published on 8081
 $ docker run -d \
   -e VIRTUAL_HOST=memory-counter.docker \
   -p 8081:80 \
   --name memory-counter \
   andersjanmyr/counter
+
+# Browse to the container, click the counter or the digit
+$ open memory-counter.docker # or docker:8081
 
 # $ Start a counter web app linked to redis with a VIRTUAL_HOST environment
 # variable set to redis-counter.docker and port published on 8082
@@ -157,6 +193,9 @@ $ docker run -d --link redis -e REDIS_URL=redis:6379 \
   --name redis-counter \
   andersjanmyr/counter
 
+# Browse to the container, click the counter or the digit
+$ open redis-counter.docker # or docker:8082
+
 # $ Start a counter web app linked to postgres with a VIRTUAL_HOST environment
 # variable set to postgres-counter.docker and port published on 8083
 $ docker run -d --link postgres \
@@ -165,6 +204,9 @@ $ docker run -d --link postgres \
   -p 8083:80 \
   andersjanmyr/counter
 
+# Browse to the container, click the counter or the digit
+$ open postgres-counter.docker # or docker:8083
+
 # $ Start a counter web app linked to mongo with a VIRTUAL_HOST environment
 # variable set to mongo-counter.docker and port published on 8084
 $ docker run -d --link mongo \
@@ -172,6 +214,9 @@ $ docker run -d --link mongo \
   -e VIRTUAL_HOST=mongo-counter.docker \
   -p 8084:80 \
   andersjanmyr/counter
+
+# Browse to the container, click the counter or the digit
+$ open mongo-counter.docker # or docker:8084
 
 # Check that the containers are running
 $ docker ps
@@ -293,6 +338,9 @@ $ docker exec redis cat /entrypoint.sh
 * What hostnames are available in `/etc/hosts`?
 * Where do the hostnames come from?
 * It may not be possible to get into some of the containers, why is this?
+* How does the `nginx-proxy` work? Check out the nginx configuration files
+  located in the container at `/etc/nginx/nginx.conf` and
+  `/etc/nginx/conf.d/default.conf`
 
 ### Getting files out of a container
 
