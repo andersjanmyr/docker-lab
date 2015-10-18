@@ -34,6 +34,7 @@ $ ping docker
 
 ## TODO
 
+* Add running tool-containers for redis, mongo, and postgres
 * Quick reference docker run
 * Quick reference docker build/Dockerfile
 * Docker compose
