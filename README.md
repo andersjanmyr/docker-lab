@@ -556,3 +556,36 @@ going on in the containers.
 * When the scaling works, check out the nginx config,
   `/etc/nginx/conf.d/default.conf`. What has happened?
 
+
+### Docker Swarm and Docker Machine
+
+`docker-swarm` is the Docker solution to manage a cluster of machines. It works
+by treating the cluster of machines as if it was a single machine. The simplest
+way to bring a Swarm is to use `docker-machine`.
+
+`docker-machine` is a common tool for setting up Docker enabled machines in a
+lot of different environments. The currently supported environments are
+
+* Amazon Web Services
+* Microsoft Azure
+* Digital Ocean
+* Exoscale
+* Google Compute Engine
+* Generic
+* Microsoft Hyper-V
+* OpenStack
+* Rackspace
+* IBM Softlayer
+* Oracle VirtualBox
+* VMware vCloud Air
+* VMware Fusion
+* VMware vSphere
+
+Take special notice of the `Generic` driver in this list as this can be used to
+configure Docker on any machine, such as local hardware.
+
+In this lab we will continue to use VirtualBox, but now we will bring up some
+more machines.
+
+
+
