@@ -36,7 +36,6 @@ $ ping docker
 
 * Quick reference docker run
 * Quick reference docker build/Dockerfile
-* Dockerfiles lab
 * Docker compose
 * Docker machine
 * Docker swarm
@@ -404,12 +403,37 @@ $ docker build -t yourname:atag .
   [node](https://hub.docker.com/_/node/), [nginx](https://hub.docker.com/_/nginx/),
   [java](https://hub.docker.com/_/java/), [maven](https://hub.docker.com/_/maven/),
   [ruby](https://hub.docker.com/_/ruby/), [python](https://hub.docker.com/_/python/).
-  It is often useful to start with an `ONBUILD` image, if one exists.
+  It is often useful to start with an `ONBUILD` image, if one exists. If you
+  need a service to build, here are some examples:
+  - [express](http://expressjs.com/starter/hello-world.html) (node)
+  - [simplehttpserver](https://docs.python.org/2/library/simplehttpserver.html)
+    (python)
+  - [nginx](https://github.com/docker-library/docs/tree/master/nginx#hosting-some-simple-static-content), just add a file...
+
 * Create an image that runs as a tool. If you have no ideas of your own, try to make a
   `git` or an `ls` image. A tool image is configured like this:
   - It uses `ENTRYPOINT` to set to the command to run.
   - It uses `CMD` to set the default options.
-  Check out [redis](https://github.com/docker-library/redis/tree/master/3.0)
-  for an example.
-*
+  - An example with only entrypoint is [redis](https://github.com/docker-library/redis/tree/master/3.0)
+
+* Create two separate build and run images. Build the artifacts in the build
+  image, then copy it out of the build image and into the run image. (advanced)
+
+
+## Docker Compose
+
+`docker-compose` works similarly to `docker run`. In this exercise your task is
+to start all the containers that we started with `docker run` in the beginning.
+
+```
+# Stop and remove all running containers.
+$ docker rm -f $(docker ps -qa)
+
+# Create a new empty directory and put a docker-compose.yml into it
+$ mkdir mydir
+$ cd mydir
+$ touch docker-compose.yml
+$ <edit> docker-compose.yml
+```
+
 
