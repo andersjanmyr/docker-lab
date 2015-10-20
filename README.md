@@ -13,9 +13,8 @@ https://docs.docker.com/installation/
 
 If you are running OSX or Windows add the IP address of the virtual machine to
 `/etc/hosts` to simplify interacting with it.
-192.168.99.100 docker
-```
 
+```
 $ sudo vi /etc/hosts # or use another editor :)
 # Add the IP of the virtual machine
 192.168.99.100 docker
@@ -31,30 +30,6 @@ $ ping docker
 192.168.99.100 mongo-counter.docker
 192.168.99.100 postgres-counter.docker
 ```
-
-## TODO
-
-* Add running tool-containers for redis, mongo, and postgres
-* Quick reference docker run
-* Quick reference docker build/Dockerfile
-* Docker compose
-* Docker machine
-* Docker swarm
-
-## Test Images
-
-* debian - Official Debian Image
-* ubuntu - Official Ubuntu Image
-* scratch - Base image for other images, 0 bytes
-* busybox - Minimal Linux distro, 2.5MB
-* node - Official Node.js image
-* redis - Official Redis image
-* mongo - Official Mongo image
-* postgres - Official Postgres image
-* jwilder/nginx-proxy - Nginx image with automatic proxy configuration of other
-  containers.
-* andersjanmyr/counter - Counter web-service with support for multiple
-  databases.
 
 ## Running Containers
 
@@ -100,7 +75,7 @@ $ docker ps -l
 # List ID of latest container
 $ docker ps -l -q
 
-# Start and attact to the stopped container
+# Start and attach to the stopped container
 $ docker start -ia $(docker ps -l -q)
 
 # Exit the container, exit or Ctrl-D
@@ -587,5 +562,29 @@ configure Docker on any machine, such as local hardware.
 In this lab we will continue to use VirtualBox, but now we will bring up some
 more machines.
 
+## Used Images
+
+* debian - Official Debian Image
+* ubuntu - Official Ubuntu Image
+* scratch - Base image for other images, 0 bytes
+* busybox - Minimal Linux distro, 2.5MB
+* node - Official Node.js image
+* redis - Official Redis image
+* mongo - Official Mongo image
+* postgres - Official Postgres image
+* jwilder/nginx-proxy - Nginx image with automatic proxy configuration of other
+  containers.
+* andersjanmyr/counter - Counter web-service with support for multiple
+  databases.
+
+
+## TODO
+
+* Add running tool-containers for redis, mongo, and postgres
+* Quick reference docker run
+* Quick reference docker build/Dockerfile
+* Docker compose
+* Docker machine
+* Docker swarm
 
 
