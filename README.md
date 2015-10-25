@@ -104,44 +104,13 @@ something like this.
 # mounted on directory ./data/redis
 $ docker run -d --name redis -v $PWD/data/redis:/data redis
 
-# To connect to the redis database with a redis-cli you can use the same image
-# Start an interactive (-it) container, that will be removed on exit (--rm),
-# link it to the redis container above (--link redis), run the redis image (redis)
-# override the command with redis-cli and connect to the linked redis host
-# (redis-cli -h redis)
-$ docker run -it --rm --link redis redis redis-cli -h redis
-
-# For help with redis-cli, try
-$ docker run -it --rm redis redis-cli --help
-
 
 # Start a Mongo container
 $ docker run -d --name mongo mongo
 
-# To connect to mongo, use the same technique as to connect to redis above
-# Start an interactive (-it) container, that will be removed on exit (--rm),
-# link it to the mongo container above (--link mongo), run the mongo image (mongo)
-# override the command with mongo and connect to the linked mongo host
-# (mongo --host mongo)
-$ docker run -it --rm --link mongo mongo mongo --host mongo
-
-# For help with mongo-shell
-$ docker run -it --rm mongo mongo --help
-
 
 # Start a Postgres container
 $ docker run -d --name postgres postgres
-
-# To connect to postgres, use the same technique again
-# Start an interactive (-it) container, that will be removed on exit (--rm),
-# link it to the postgres container (--link postgres), run the postgres image (postgres)
-# override the command with psql and connect to the linked psql host
-# (psql --host postgres -U postgres), username -U is required
-$ docker run -it --rm --link postgres postgres psql -h postgres -U postgres
-
-# For help with psql
-$ docker run -it --rm postgres psql --help
-
 
 # Start an Nginx container with port published on 80 (-p) and the docker
 # socket mounted as a read-only volume
@@ -354,6 +323,53 @@ $ cat hosts
 echo '74.125.232.127 tapir' >> hosts
 $ docker cp hosts redis-counter:/etc/hosts
 ```
+
+
+### Tool Containers
+
+Most database images also contains the tools required for connecting to the
+databases from the command line. When using containers like this, we don't want
+the containers lying around after we have finished with our tasks. Therefore, we
+start the containers with `--rm` to tell docker to remove the container on
+exit. We also want to interact with the containers and use `-it` to tell docker
+that we want an interactive container with a pseudo-tty to handle signals such
+as Ctrl-C, and Ctrl-D.
+
+Here's how to connect to our started database containers.
+
+```
+# To connect to the redis database with a redis-cli you can use the same image
+# Start an interactive (-it) container, that will be removed on exit (--rm),
+# link it to the redis container above (--link redis), run the redis image (redis)
+# override the command with redis-cli and connect to the linked redis host
+# (redis-cli -h redis)
+$ docker run -it --rm --link redis redis redis-cli -h redis
+
+# For help with redis-cli, try
+$ docker run -it --rm redis redis-cli --help
+
+
+# To connect to mongo, use the same technique as to connect to redis above
+# Start an interactive (-it) container, that will be removed on exit (--rm),
+# link it to the mongo container above (--link mongo), run the mongo image (mongo)
+# override the command with mongo and connect to the linked mongo host
+# (mongo --host mongo)
+$ docker run -it --rm --link mongo mongo mongo --host mongo
+
+# For help with mongo-shell
+$ docker run -it --rm mongo mongo --help
+
+# To connect to postgres, use the same technique again
+# Start an interactive (-it) container, that will be removed on exit (--rm),
+# link it to the postgres container (--link postgres), run the postgres image (postgres)
+# override the command with psql and connect to the linked psql host
+# (psql --host postgres -U postgres), username -U is required
+$ docker run -it --rm --link postgres postgres psql -h postgres -U postgres
+
+# For help with psql
+$ docker run -it --rm postgres psql --help
+```
+
 
 
 ## Dockerfiles
