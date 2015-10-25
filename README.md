@@ -104,10 +104,8 @@ something like this.
 # mounted on directory ./data/redis
 $ docker run -d --name redis -v $PWD/data/redis:/data redis
 
-
 # Start a Mongo container
 $ docker run -d --name mongo mongo
-
 
 # Start a Postgres container
 $ docker run -d --name postgres postgres
@@ -653,8 +651,6 @@ we have deployed it to the swarm.
 
 ![swarm.png](swarm.png)
 
-Tweak the `docker-compose.yml` file to deploy to the cluster.
-
 To tell the swarm were to put the containers, we can use filters.
 Filters are passed as environment variables with the docker command.
 
@@ -668,10 +664,24 @@ You can read more about filters at [the docker page about filters](https://docs.
 
 
 In order to get `nginx-proxy` to work in a swarm cluster it must be configured
-to work with the swarm-master.
+to work with the swarm-master. You do this by passing along the environment
+variables that docker uses for its secure connection. `-e DOCKER_HOST -e
+DOCKER_CERT_PATH -e DOCKER_TLS_VERIFY` and mount the volume where the
+certificates are stored `-v $DOCKER_CERT_PATH:$DOCKER_CERT_PATH`
 
 ```
-$ docker run -p 80:80 -d -e constraint:public==yes --name nginx -e DOCKER_HOST -e DOCKER_CERT_PATH -e DOCKER_TLS_VERIFY -v $DOCKER_CERT_PATH:$DOCKER_CERT_PATH -it jwilder/nginx-proxy
+$ docker run -p 80:80 -d \
+  -v $DOCKER_CERT_PATH:$DOCKER_CERT_PATH \
+  -e DOCKER_HOST \
+  -e DOCKER_CERT_PATH \
+  -e DOCKER_TLS_VERIFY \
+  -e constraint:public==yes \
+  --name nginx \
+  jwilder/nginx-proxy
+```
+
+With this information you should be able to tweak your `docker-compose.yml` to
+be able to deploy the containers to the swarm as specified by the image.
 
 ## Used Images
 
@@ -693,8 +703,5 @@ $ docker run -p 80:80 -d -e constraint:public==yes --name nginx -e DOCKER_HOST -
 
 * Quick reference docker run
 * Quick reference docker build/Dockerfile
-* Docker compose
-* Docker machine
-* Docker swarm
 
 
