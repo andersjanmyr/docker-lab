@@ -587,17 +587,19 @@ $ docker-machine create \
   --engine-label public=yes \
   frontend
 
-# Create two more nodes with no labels
+# Create two more nodes named backend1 and backend2, with no labels
 $ docker-machine create \
   -d virtualbox \
   --swarm \
   --swarm-discovery token://$token \
+  --engine-label public=no \
   backend1
 
 $ docker-machine create \
   -d virtualbox \
   --swarm \
   --swarm-discovery token://$token \
+  --engine-label public=no \
   backend2
 
 # List your machines
@@ -625,7 +627,10 @@ $ docker info
 ### Deploy your containers to the swarm
 
 
-Now it is time to deploy. Tweak the `docker-compose.yml` file to deploy to the cluster
+Now it is time to deploy. Try to deploy the `docker-compose.yml` file and see
+what happens.
+
+Tweak the `docker-compose.yml` file to deploy to the cluster
 
 
 ## Used Images
