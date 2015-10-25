@@ -92,10 +92,12 @@ $ docker rm $(docker ps -l -q) # Or use the name
 
 ### Start some containers
 
-![containers.png](containers.png)
 
 In this section you will start up some containers that you can work with in the
-following sections.
+following sections. When all the containers are started it will look like
+something like this.
+
+![containers.png](containers.png)
 
 ```
 # Start a detached (-d) Redis container named redis with its /data volume
@@ -629,14 +631,31 @@ $ docker info
 ### Deploy your containers to the swarm
 
 
-Now it is time to deploy our composed containers to the swarm. This is how it
-is supposed to look once we have deployed it.
+Now it is time to deploy our composed containers to the swarm. We don't want
+the containers to be deployed anywhere. This is how it is should look once
+we have deployed it to the swarm.
 
 ![swarm.png](swarm.png)
 
 Tweak the `docker-compose.yml` file to deploy to the cluster.
 
+To tell the swarm were to put the containers, we can use filters.
+Filters are passed as environment variables with the docker command.
 
+* `-e affinity:container==*redis*` - Start on a node with a redis container
+  running.
+* `-e constraint:public==yes` - Start on a node that has a public=yes label.
+* `-e constraint:public!=yes` - Start on a node that does not have a public=yes
+  label.
+
+You can read more about filters at [the docker page about filters](https://docs.docker.com/swarm/scheduler/filter/)
+
+
+In order to get `nginx-proxy` to work in a swarm cluster it must be configured
+to work with the swarm-master.
+
+```
+$ docker run -p 80:80 -d -e constraint:public==yes --name nginx -e DOCKER_HOST -e DOCKER_CERT_PATH -e DOCKER_TLS_VERIFY -v $DOCKER_CERT_PATH:$DOCKER_CERT_PATH -it jwilder/nginx-proxy
 
 ## Used Images
 
