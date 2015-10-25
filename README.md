@@ -532,7 +532,7 @@ going on in the containers.
   `/etc/nginx/conf.d/default.conf`. What has happened?
 
 
-### Docker Swarm and Docker Machine
+## Docker Swarm and Docker Machine
 
 `docker-swarm` is the Docker solution to manage a cluster of machines. It works
 by treating the cluster of machines as if it was a single machine. The simplest
@@ -561,6 +561,72 @@ configure Docker on any machine, such as local hardware.
 
 In this lab we will continue to use VirtualBox, but now we will bring up some
 more machines.
+
+
+### Start Swarm Machines
+
+Spin up a swarm with three machines.
+
+```
+# Create and save a token, using the Docker-Hub discovery service, default
+$ token=$(docker run swarm create)
+
+# Create a swarm manager using the token
+$ docker-machine create \
+  -d virtualbox \
+  --swarm \
+  --swarm-master \
+  --swarm-discovery token://$token \
+  swarm-master
+
+# Create a new node named frontend and label it public
+$ docker-machine create \
+  -d virtualbox \
+  --swarm \
+  --swarm-discovery token://$token \
+  --engine-label public=yes \
+  frontend
+
+# Create two more nodes with no labels
+$ docker-machine create \
+  -d virtualbox \
+  --swarm \
+  --swarm-discovery token://$token \
+  backend1
+
+$ docker-machine create \
+  -d virtualbox \
+  --swarm \
+  --swarm-discovery token://$token \
+  backend2
+
+# List your machines
+$ docker-machine ls
+
+# You can connect to any machine with docker-machine ssh <machine-name>
+$ docker-machine ssh frontend
+
+docker@swarm-frontend:~$ exit
+```
+
+### Take control of the swarm
+
+```
+# List the environment needed to connect to the swarm
+$ docker-machine env --swarm swarm-master
+
+# Configure docker to use them
+$ eval $(docker-machine env --swarm swarm-master)
+
+# List information about the cluster
+$ docker info
+```
+
+### Deploy your containers to the swarm
+
+
+Now it is time to deploy. Tweak the `docker-compose.yml` file to deploy to the cluster
+
 
 ## Used Images
 
