@@ -1,0 +1,68 @@
+redis:
+  image: redis
+  environment:
+    - constraint:public!=yes
+
+mongo:
+  image: mongo
+  environment:
+    - constraint:public!=yes
+
+postgres:
+  image: postgres
+  environment:
+    - constraint:public!=yes
+
+nginx:
+  image: jwilder/nginx-proxy
+  volumes:
+    - $DOCKER_CERT_PATH:$DOCKER_CERT_PATH
+  ports:
+    - "80:80"
+  environment:
+    - constraint:public==yes
+    - DOCKER_HOST
+    - DOCKER_CERT_PATH
+    - DOCKER_TLS_VERIFY
+
+memory-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - constraint:public!=yes
+    - VIRTUAL_HOST=memory-counter.docker
+
+redis-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - affinity:container==*redis*
+    - REDIS_URL=redis:6379
+    - VIRTUAL_HOST=redis-counter.docker
+  links:
+    - redis
+
+postgres-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - affinity:container==*postgres*
+    - POSTGRES_URL=postgres://postgres@postgres
+    - VIRTUAL_HOST=postgres-counter.docker
+  links:
+    - postgres
+
+mongo-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - affinity:container==*mongo*
+    - MONGO_URL=mongo:27017
+    - VIRTUAL_HOST=mongo-counter.docker
+  links:
+    - mongo
+
