@@ -92,6 +92,8 @@ $ docker rm $(docker ps -l -q) # Or use the name
 
 ### Start some containers
 
+![containers.png](containers.png)
+
 In this section you will start up some containers that you can work with in the
 following sections.
 
@@ -627,10 +629,13 @@ $ docker info
 ### Deploy your containers to the swarm
 
 
-Now it is time to deploy. Try to deploy the `docker-compose.yml` file and see
-what happens.
+Now it is time to deploy our composed containers to the swarm. This is how it
+is supposed to look once we have deployed it.
 
-Tweak the `docker-compose.yml` file to deploy to the cluster
+![swarm.png](swarm.png)
+
+Tweak the `docker-compose.yml` file to deploy to the cluster.
+
 
 
 ## Used Images
