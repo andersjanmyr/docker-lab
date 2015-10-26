@@ -53,8 +53,9 @@ advance to limit network usage.
 
 ```
 # Pull all the images
-$ docker pull debian ubuntu scratch busybox node redis mongo postgres \
-    jwilder/nginx-proxy andersjanmyr/counter
+$ for i in debian ubuntu scratch busybox node redis mongo postgres jwilder/nginx-proxy andersjanmyr/counter; do \
+  docker pull $i \
+  done
 ```
 
 ## Running Containers
