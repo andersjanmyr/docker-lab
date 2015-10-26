@@ -1,13 +1,15 @@
 # Docker Lab
 
-## Requirements
+## Preparation
+
+### Requirements
 
 * Linux
 * OS X
 * Windows 7.1, 8 or newer BUT NOT Windows 10.
 
 
-## Install Docker
+### Install Docker
 
 https://docs.docker.com/installation/
 
@@ -29,6 +31,30 @@ $ ping docker
 192.168.99.100 redis-counter.docker
 192.168.99.100 mongo-counter.docker
 192.168.99.100 postgres-counter.docker
+```
+
+### Pull commonly used images
+
+The following images will be used during the workshop and may be pulled in
+advance to limit network usage.
+
+* debian - Official Debian Image
+* ubuntu - Official Ubuntu Image
+* scratch - Base image for other images, 0 bytes
+* busybox - Minimal Linux distro, 2.5MB
+* node - Official Node.js image
+* redis - Official Redis image
+* mongo - Official Mongo image
+* postgres - Official Postgres image
+* jwilder/nginx-proxy - Nginx image with automatic proxy configuration of other
+  containers.
+* andersjanmyr/counter - Counter web-service with support for multiple
+  databases.
+
+```
+# Pull all the images
+$ docker pull debian ubuntu scratch busybox node redis mongo postgres \
+    jwilder/nginx-proxy andersjanmyr/counter
 ```
 
 ## Running Containers
@@ -682,21 +708,6 @@ $ docker run -p 80:80 -d \
 
 With this information you should be able to tweak your `docker-compose.yml` to
 be able to deploy the containers to the swarm as specified by the image.
-
-## Used Images
-
-* debian - Official Debian Image
-* ubuntu - Official Ubuntu Image
-* scratch - Base image for other images, 0 bytes
-* busybox - Minimal Linux distro, 2.5MB
-* node - Official Node.js image
-* redis - Official Redis image
-* mongo - Official Mongo image
-* postgres - Official Postgres image
-* jwilder/nginx-proxy - Nginx image with automatic proxy configuration of other
-  containers.
-* andersjanmyr/counter - Counter web-service with support for multiple
-  databases.
 
 
 ## TODO
