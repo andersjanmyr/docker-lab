@@ -710,10 +710,3 @@ $ docker run -p 80:80 -d \
 With this information you should be able to tweak your `docker-compose.yml` to
 be able to deploy the containers to the swarm as specified by the image.
 
-
-## TODO
-
-* Quick reference docker run
-* Quick reference docker build/Dockerfile
-
-
