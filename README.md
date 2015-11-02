@@ -40,7 +40,7 @@ advance to limit network usage.
 
 * debian - Official Debian Image
 * ubuntu - Official Ubuntu Image
-* scratch - Base image for other images, 0 bytes
+* scratch - Base image for other images, 0 bytes, no need to pull this
 * busybox - Minimal Linux distro, 2.5MB
 * node - Official Node.js image
 * redis - Official Redis image
@@ -53,9 +53,9 @@ advance to limit network usage.
 
 ```
 # Pull all the images
-$ for i in debian ubuntu scratch busybox node redis mongo postgres jwilder/nginx-proxy andersjanmyr/counter; do \
-  docker pull $i \
-  done
+$ for i in debian ubuntu busybox node redis mongo postgres jwilder/nginx-proxy andersjanmyr/counter; do \
+  docker pull $i
+done
 ```
 
 ## Running Containers
