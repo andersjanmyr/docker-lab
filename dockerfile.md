@@ -79,12 +79,12 @@ The commands can be given as two forms:
 * `ENV key1=value1 ...` - can set multiple values, quotes, backslash, etc works
   as on the command line.
 
-### `EXPOSE port` (expose a port)
+### `EXPOSE port` (expose a port) *RUN*
 
 The port is exposed to other containers, not to the host. Use `docker run -p`
 for that.
 
-### `VOLUME /path` (path will be a volume outside the container)
+### `VOLUME /path` (path will be a volume outside the container) *RUN*
 
 This means not handled by Docker's union file system
 
