@@ -1,0 +1,30 @@
+body {
+  margin-top: 20px;
+  margin-left: 100px;
+  font-family: 'Open Sans'
+}
+
+h1 {
+  font-size: 32pt;
+}
+
+h2, h3 {
+  margin-top: 12px;
+}
+
+p, pre, h2, h3, ul {
+  width: 700px;
+  margin-bottom: 0;
+}
+
+p, ul {
+  margin-top: 5px;
+}
+
+img {
+  float: right;
+  height: 100px;
+  margin-top: -20px;
+}
+
+
