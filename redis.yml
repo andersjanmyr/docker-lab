@@ -1,0 +1,14 @@
+redis:
+  image: redis
+  volumes:
+    - ./data/redis:/data
+
+redis-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - REDIS_URL=redis:6379
+    - VIRTUAL_HOST=redis-counter.docker
+  links:
+    - redis:redis

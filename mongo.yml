@@ -1,0 +1,13 @@
+mongo:
+  image: mongo
+
+mongo-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - MONGO_URL=mongo:27017
+    - VIRTUAL_HOST=mongo-counter.docker
+  links:
+    - mongo:mongo
+

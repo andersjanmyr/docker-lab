@@ -1,0 +1,12 @@
+postgres:
+  image: postgres
+
+postgres-counter:
+  image: andersjanmyr/counter
+  ports:
+    - "80"
+  environment:
+    - POSTGRES_URL=postgres://postgres@postgres
+    - VIRTUAL_HOST=postgres-counter.docker
+  links:
+    - postgres:postgres
