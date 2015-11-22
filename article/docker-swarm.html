@@ -1,0 +1,339 @@
+<h1>Simple Clustering with Docker Swarm and Nginx</h1>
+
+<p>Bringing up your own cluster has never been easier. The <a href="https://blog.docker.com/2015/11/swarm-1-0/">recent 1.0 release of
+Docker Swarm</a> signals that the
+Docker team feel that Swarm is ready for production.</p>
+
+<p>I&apos;ve been running a bunch of applications on Docker for a while now, but I have
+managed the containers on the single machine level instead of as a cluster.
+With the release of Swarm 1.0, I believe it is time to start clustering my
+machines.</p>
+
+<h2>Spinning Up the Swarm</h2>
+
+<p>How to spin up a Swarm for development is described well in the <a href="http://docs.docker.com/swarm/install-w-machine/">Docker
+documentation</a> and I&apos;m not going
+to describe it in depth here. I&apos;ll settle for the commands and extra
+documentation when I feel that it may be called for.</p>
+
+<p>I&apos;m using the Swarm for development with VirtualBox here, but it is simple to
+substitute any of the supported <a href="https://docs.docker.com/machine/drivers/">docker-machine
+providers</a>.</p>
+
+<h3>Create a Token</h3>
+
+<p>Create a token with the Docker Hub discovery service. When running this in
+production you should probably setup an <a href="http://docs.docker.com/swarm/discovery/">alternate discovery backend</a>
+to avoid the external dependency.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Create and save a token, using the Docker-Hub discovery service, default</font></i>
+$ <font color="#009900">token</font><font color="#990000">=</font><font color="#009900">$(</font>docker run swarm create<font color="#990000">)</font>
+</tt></pre>
+<h3>Create a Swarm Manager</h3>
+
+<p>The swarm manager will be used to control the swarm. It should be protected
+from access from anyone but you. I&apos;ll simulate this here by setting
+<code>--engine-label public=no</code>. This is just a tag and you would have to make sure
+that you setup the manager protected from public access. It is possible to use
+multiple labels to tag the engine with all the qualities of this machine.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Create a swarm manager using the token</font></i>
+$ docker-machine create <font color="#990000">\</font>
+  -d virtualbox <font color="#990000">\</font>
+  --swarm <font color="#990000">\</font>
+  --swarm-master <font color="#990000">\</font>
+  --swarm-discovery token<font color="#990000">://</font><font color="#009900">$token</font> <font color="#990000">\</font>
+  --engine-label <font color="#009900">public</font><font color="#990000">=</font>no <font color="#990000">\</font>
+  swarm-master
+</tt></pre>
+<h3>Create a Publicly Accessible Machine</h3>
+
+<p>In this demo I&apos;m only spinning up another VirtualBox machine and I&apos;m giving it
+the <code>--engine-label public=yes</code> to allow me to discover this box in the swarm.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Create a new node named frontend and label it public</font></i>
+$ docker-machine create <font color="#990000">\</font>
+  -d virtualbox <font color="#990000">\</font>
+  --swarm <font color="#990000">\</font>
+  --swarm-discovery token<font color="#990000">://</font><font color="#009900">$token</font> <font color="#990000">\</font>
+  --engine-label <font color="#009900">public</font><font color="#990000">=</font>yes <font color="#990000">\</font>
+  frontend
+</tt></pre>
+<h3>Create a Couple of Additional Non-Public Machines</h3>
+
+<p>Here I start a couple of machines with an additional <code>--engine-label</code>.
+One with <code>model=high-memory</code> and one with <code>model=large-disk</code></p>
+<h1>Create two more nodes named backend1 and backend2, with label public=no</h1>
+
+<p>$ docker-machine create \
+  -d virtualbox \
+  --swarm \
+  --swarm-discovery token://$token \
+  --engine-label public=no \
+  --engine-label model=high-memory \
+  backend1</p>
+
+<p>$ docker-machine create \
+  -d virtualbox \
+  --swarm \
+  --swarm-discovery token://$token \
+  --engine-label public=no \
+  --engine-label model=large-disk \
+  backend2</p>
+<h3>List the Swarm</h3>
+
+<p><img src="the-swarm-machines.png" alt="the-swarm-machines"></p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># List your machines</font></i>
+$ docker-machine ls
+NAME           ACTIVE   DRIVER       STATE     URL                         SWARM
+backend1       -        virtualbox   Running   tcp<font color="#990000">://</font><font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.103</font><font color="#990000">:</font><font color="#993399">2376</font>   swarm-master
+backend2       -        virtualbox   Running   tcp<font color="#990000">://</font><font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.104</font><font color="#990000">:</font><font color="#993399">2376</font>   swarm-master
+frontend       -        virtualbox   Running   tcp<font color="#990000">://</font><font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.102</font><font color="#990000">:</font><font color="#993399">2376</font>   swarm-master
+swarm-master   -        virtualbox   Running   tcp<font color="#990000">://</font><font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.101</font><font color="#990000">:</font><font color="#993399">2376</font>   swarm-master <font color="#990000">(</font>master<font color="#990000">)</font>
+</tt></pre>
+<h3>Connect to the Swarm</h3>
+
+<p>Configure the docker client to connect to it.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># List the environment needed to connect to the swarm</font></i>
+$ docker-machine env --swarm swarm-master
+<b><font color="#0000FF">export</font></b> <font color="#009900">DOCKER_TLS_VERIFY</font><font color="#990000">=</font><font color="#FF0000">"1"</font>
+<b><font color="#0000FF">export</font></b> <font color="#009900">DOCKER_HOST</font><font color="#990000">=</font><font color="#FF0000">"tcp://192.168.99.101:3376"</font>
+<b><font color="#0000FF">export</font></b> <font color="#009900">DOCKER_CERT_PATH</font><font color="#990000">=</font><font color="#FF0000">"/Users/andersjanmyr/.docker/machine/machines/swarm-master"</font>
+<b><font color="#0000FF">export</font></b> <font color="#009900">DOCKER_MACHINE_NAME</font><font color="#990000">=</font><font color="#FF0000">"swarm-master"</font>
+<i><font color="#9A1900"># Run this command to configure your shell:</font></i>
+<i><font color="#9A1900"># eval "$(docker-machine env --swarm swarm-master)"</font></i>
+
+<i><font color="#9A1900"># Configure docker to use the swarm-master</font></i>
+$ <b><font color="#0000FF">eval</font></b> <font color="#009900">$(</font>docker-machine env --swarm swarm-master<font color="#990000">)</font>
+
+<i><font color="#9A1900"># List information about the cluster</font></i>
+$ docker info
+Containers<font color="#990000">:</font> <font color="#993399">4</font>
+Images<font color="#990000">:</font> <font color="#993399">3</font>
+Role<font color="#990000">:</font> primary
+Strategy<font color="#990000">:</font> spread
+Filters<font color="#990000">:</font> health<font color="#990000">,</font> port<font color="#990000">,</font> dependency<font color="#990000">,</font> affinity<font color="#990000">,</font> constraint
+Nodes<font color="#990000">:</font> <font color="#993399">3</font>
+ backend1<font color="#990000">:</font> <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.103</font><font color="#990000">:</font><font color="#993399">2376</font>
+   Containers<font color="#990000">:</font> <font color="#993399">1</font>
+   Reserved CPUs<font color="#990000">:</font> <font color="#993399">0</font> <font color="#990000">/</font> <font color="#993399">1</font>
+   Reserved Memory<font color="#990000">:</font> <font color="#993399">0</font> B <font color="#990000">/</font> <font color="#993399">1.021</font> GiB
+   Labels<font color="#990000">:</font> <font color="#009900">executiondriver</font><font color="#990000">=</font>native-<font color="#993399">0.2</font><font color="#990000">,</font> <font color="#009900">kernelversion</font><font color="#990000">=</font><font color="#993399">4.1</font><font color="#990000">.</font><font color="#993399">12</font>-boot2docker<font color="#990000">,</font> <font color="#009900">model</font><font color="#990000">=</font>high-memory<font color="#990000">,</font> <font color="#009900">operatingsystem</font><font color="#990000">=</font>Boot2Docker <font color="#993399">1.9</font><font color="#990000">.</font><font color="#993399">0</font> <font color="#990000">(</font>TCL <font color="#993399">6.4</font><font color="#990000">);</font> master <font color="#990000">:</font> 16e4a2a - Tue Nov  <font color="#993399">3</font> <font color="#993399">19</font><font color="#990000">:</font><font color="#993399">49</font><font color="#990000">:</font><font color="#993399">22</font> UTC <font color="#993399">2015</font><font color="#990000">,</font> <font color="#009900">provider</font><font color="#990000">=</font>virtualbox<font color="#990000">,</font> <font color="#009900">public</font><font color="#990000">=</font>no<font color="#990000">,</font> <font color="#009900">storagedriver</font><font color="#990000">=</font>aufs
+ frontend<font color="#990000">:</font> <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.102</font><font color="#990000">:</font><font color="#993399">2376</font>
+   Containers<font color="#990000">:</font> <font color="#993399">1</font>
+   Reserved CPUs<font color="#990000">:</font> <font color="#993399">0</font> <font color="#990000">/</font> <font color="#993399">1</font>
+   Reserved Memory<font color="#990000">:</font> <font color="#993399">0</font> B <font color="#990000">/</font> <font color="#993399">1.021</font> GiB
+   Labels<font color="#990000">:</font> <font color="#009900">executiondriver</font><font color="#990000">=</font>native-<font color="#993399">0.2</font><font color="#990000">,</font> <font color="#009900">kernelversion</font><font color="#990000">=</font><font color="#993399">4.1</font><font color="#990000">.</font><font color="#993399">12</font>-boot2docker<font color="#990000">,</font> <font color="#009900">operatingsystem</font><font color="#990000">=</font>Boot2Docker <font color="#993399">1.9</font><font color="#990000">.</font><font color="#993399">0</font> <font color="#990000">(</font>TCL <font color="#993399">6.4</font><font color="#990000">);</font> master <font color="#990000">:</font> 16e4a2a - Tue Nov  <font color="#993399">3</font> <font color="#993399">19</font><font color="#990000">:</font><font color="#993399">49</font><font color="#990000">:</font><font color="#993399">22</font> UTC <font color="#993399">2015</font><font color="#990000">,</font> <font color="#009900">provider</font><font color="#990000">=</font>virtualbox<font color="#990000">,</font> <font color="#009900">public</font><font color="#990000">=</font>yes<font color="#990000">,</font> <font color="#009900">storagedriver</font><font color="#990000">=</font>aufs
+ swarm-master<font color="#990000">:</font> <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.101</font><font color="#990000">:</font><font color="#993399">2376</font>
+   Containers<font color="#990000">:</font> <font color="#993399">2</font>
+   Reserved CPUs<font color="#990000">:</font> <font color="#993399">0</font> <font color="#990000">/</font> <font color="#993399">1</font>
+   Reserved Memory<font color="#990000">:</font> <font color="#993399">0</font> B <font color="#990000">/</font> <font color="#993399">1.021</font> GiB
+   Labels<font color="#990000">:</font> <font color="#009900">executiondriver</font><font color="#990000">=</font>native-<font color="#993399">0.2</font><font color="#990000">,</font> <font color="#009900">kernelversion</font><font color="#990000">=</font><font color="#993399">4.1</font><font color="#990000">.</font><font color="#993399">12</font>-boot2docker<font color="#990000">,</font> <font color="#009900">operatingsystem</font><font color="#990000">=</font>Boot2Docker <font color="#993399">1.9</font><font color="#990000">.</font><font color="#993399">0</font> <font color="#990000">(</font>TCL <font color="#993399">6.4</font><font color="#990000">);</font> master <font color="#990000">:</font> 16e4a2a - Tue Nov  <font color="#993399">3</font> <font color="#993399">19</font><font color="#990000">:</font><font color="#993399">49</font><font color="#990000">:</font><font color="#993399">22</font> UTC <font color="#993399">2015</font><font color="#990000">,</font> <font color="#009900">provider</font><font color="#990000">=</font>virtualbox<font color="#990000">,</font> <font color="#009900">public</font><font color="#990000">=</font>no<font color="#990000">,</font> <font color="#009900">storagedriver</font><font color="#990000">=</font>aufs
+CPUs<font color="#990000">:</font> <font color="#993399">3</font>
+Total Memory<font color="#990000">:</font> <font color="#993399">3.064</font> GiB
+Name<font color="#990000">:</font> fa2d554280ff
+</tt></pre>
+<h2>Starting the Containers</h2>
+
+<p>Now it is time to start the containers. The plan is to bring up two
+database containers, Postgres and Redis, two counter web-services, and one
+proxy to front the whole cluster, like this.</p>
+
+<p><img src="the-cluster.png" alt="The cluster"></p>
+
+<p>Alright let&apos;s start some containers!</p>
+
+<h3>Databases</h3>
+
+<p>According to the picture above I want to put the
+<a href="https://hub.docker.com/_/redis/">Redis</a> container on the machine named
+<code>backend1</code>, but I don&apos;t want to address it by name, instead I&apos;m going to target
+it by its labels.</p>
+
+<p>I also want to start a <a href="https://hub.docker.com/_/postgres/">Postgres</a> container
+on a machine with a large-disk model.</p>
+
+<h3>Starting Redis</h3>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Start Redis on a non-public machine with high-memory.</font></i>
+$ docker run -d --name redis <font color="#990000">\</font>
+  --env constraint<font color="#990000">:</font>public<font color="#990000">!=</font>yes <font color="#990000">\</font>
+  --env constraint<font color="#990000">:</font><font color="#009900">model</font><font color="#990000">==</font>high-memory <font color="#990000">\</font>
+  redis
+</tt></pre>
+<p>In this case, <code>constraint:public!=yes</code> is not needed but I like to add it to
+avoid mistakes.</p>
+
+<h4>Starting Postgres</h4>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Start Postgres on a non-public machine with large-disk</font></i>
+$ docker run -d --name postgres <font color="#990000">\</font>
+  --env constraint<font color="#990000">:</font>public<font color="#990000">!=</font>yes <font color="#990000">\</font>
+  --env constraint<font color="#990000">:</font><font color="#009900">model</font><font color="#990000">==</font>large-disk <font color="#990000">\</font>
+  postgres
+</tt></pre>
+<p>If this was not a VirtualBox machine I would also mount a volume,
+<code>-v /var/pgdata:/var/lib/postgresql/data</code>, for the database, but this does not work
+with VirtualBox.</p>
+
+<p>OK, let&apos;s see what we have.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># List running containers, output slightly trimmed</font></i>
+$ docker ps
+CONTAINER ID     IMAGE       COMMAND                  PORTS            NAMES
+aa1679b3da5c     postgres    <font color="#FF0000">"/docker-entrypoint.s"</font>   <font color="#993399">5432</font>/tcp         backend2/postgres
+ffa41d90f414     redis       <font color="#FF0000">"/entrypoint.sh redis"</font>   <font color="#993399">6379</font>/tcp         backend1/redis
+</tt></pre>
+<p>Nice, two running databases on the designated machines.</p>
+
+<h3>Starting the Reverse Proxy</h3>
+
+<p>Nginx is one of my favorite building blocks when it comes to building reliable
+web services. Nginx provides an <a href="https://hub.docker.com/_/nginx/">official Docker image</a>,
+but in this case, when I want to automatically configure Nginx when new containers
+are started, I prefer to use an alternative image called <a href="https://github.com/jwilder/nginx-proxy">nginx-proxy</a>.</p>
+
+<p>A container started from the <code>nginx-proxy</code> image, listens to events generated
+by the docker engine. The engine generates events for <a href="http://docs.docker.com/engine/reference/api/docker_remote_api_v1.17/#monitor-dockers-events">all kinds of
+events</a>
+but all we care about here is when a container is started and stopped. If you
+want to see what events are triggered from the CLI, run <code>docker events</code> in one
+terminal and start and stop a few containers in another.</p>
+
+<p>When <code>nginx-proxy</code> receives an event that a container has been started it checks
+if the container has any ports <code>EXPOSE</code>d, if it does it also checks  for a
+<code>VIRTUAL_HOST</code> environment variable. If both these conditions are fulfilled
+<code>nginx-proxy</code> re-configures its Nginx server and reloads the configuration.</p>
+
+<p>When you now access the VIRTUAL_HOST, Nginx proxies the connection to your web
+service. Cool!</p>
+
+<p>Naturally, you will have to configure your DNS to point to your Nginx server.
+The easiest way to do this is to configure with a wildcard record. Something
+like this:</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><font color="#990000">*.</font>mysite<font color="#990000">.</font>com     Host <font color="#990000">(</font>A<font color="#990000">)</font>    Default     xxx<font color="#990000">.</font>xxx<font color="#990000">.</font>xxx<font color="#990000">.</font>xxx
+</tt></pre>
+<p>In this case, we are using VirtualBox and we can settle for changing the
+<code>/etc/hosts</code> file with the IP-number of our <code>frontend</code>.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># /etc/hosts</font></i>
+redis-counter<font color="#990000">.</font>docker    <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.102</font>
+postgres-counter<font color="#990000">.</font>docker <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.102</font>
+</tt></pre>
+<p>The cool thing is that events works with Swarm so it is possible to use the
+<code>nginx-proxy</code> to listen to services that are started on different machines. All
+we have to do is configure it correctly.</p>
+
+<h4>Starting Nginx-Proxy</h4>
+
+<p><code>nginx-proxy</code> is started with configuration read from the docker client
+environment variables.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Start nginx-proxy configured to listen to swarm events.</font></i>
+
+$ docker run -d --name nginx <font color="#990000">\</font>
+  -v <font color="#009900">$DOCKER_CERT_PATH</font><font color="#990000">:</font><font color="#009900">$DOCKER_CERT_PATH</font> <font color="#990000">\</font>
+  -p <font color="#FF0000">"80:80"</font> <font color="#990000">\</font>
+  --env constraint<font color="#990000">:</font><font color="#009900">public</font><font color="#990000">==</font>yes <font color="#990000">\</font>
+  --env DOCKER_HOST <font color="#990000">\</font>
+  --env DOCKER_CERT_PATH <font color="#990000">\</font>
+  --env DOCKER_TLS_VERIFY <font color="#990000">\</font>
+   jwilder/nginx-proxy
+
+</tt></pre>
+<p>OK, we are almost done. Now it is time to start the web services.</p>
+
+<h3>Starting Web Services</h3>
+
+<p>As a web service I&apos;m going to use a
+<a href="https://hub.docker.com/r/andersjanmyr/counter/">simple counter image</a>
+it connect to both Postgres and Redis. I want to start the web services on the
+same server as the databases since this allows me to use <code>--link</code> to connect to
+the container and it will speed up the data access. To do this I can use
+an affinity constraint: <code>--env affinity:container==*redis*</code></p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Start a counter close to the container named redis and link to it.</font></i>
+$ docker run -d --name redis-counter <font color="#990000">\</font>
+  -p <font color="#993399">80</font> <font color="#990000">\</font>
+  --link redis <font color="#990000">\</font>
+  --env affinity<font color="#990000">:</font><font color="#009900">container</font><font color="#990000">==*</font>redis<font color="#990000">*</font> <font color="#990000">\</font>
+  --env <font color="#009900">REDIS_URL</font><font color="#990000">=</font>redis<font color="#990000">:</font><font color="#993399">6379</font> <font color="#990000">\</font>
+  --env <font color="#009900">VIRTUAL_HOST</font><font color="#990000">=</font>redis-counter<font color="#990000">.</font>docker <font color="#990000">\</font>
+  andersjanmyr/counter
+</tt></pre>
+<p>And finally, lets start the <code>postgres-counter</code>.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt><i><font color="#9A1900"># Start a counter close to the container named postgres and link to it.</font></i>
+$ docker run -d --name postgres-counter <font color="#990000">\</font>
+  -p <font color="#993399">80</font> <font color="#990000">\</font>
+  --link postgres <font color="#990000">\</font>
+  --env affinity<font color="#990000">:</font><font color="#009900">container</font><font color="#990000">==*</font>postgres<font color="#990000">*</font> <font color="#990000">\</font>
+  --env <font color="#009900">POSTGRES_URL</font><font color="#990000">=</font>postgres<font color="#990000">:</font>//postgres@postgres <font color="#990000">\</font>
+  --env <font color="#009900">VIRTUAL_HOST</font><font color="#990000">=</font>postgres-counter<font color="#990000">.</font>docker <font color="#990000">\</font>
+  andersjanmyr/counter
+</tt></pre>
+<p>Browser to <code>http://redis-counter.docker</code> or <code>http:/postgres-counter.docker</code> and
+you should see your services up and running.</p>
+
+<h2>Summary</h2>
+
+<p>Here&apos;s an illustration of our current setup:</p>
+
+<p><img src="swarm-complete.png" alt="swarm-complete"></p>
+
+<p>And here is a listing of all the containers on their respective machines.</p>
+<!-- Generator: GNU source-highlight 3.1.8
+by Lorenzo Bettini
+http://www.lorenzobettini.it
+http://www.gnu.org/software/src-highlite -->
+<pre><tt>$ docker ps
+CONTAINER ID        IMAGE                  COMMAND                  PORTS                                NAMES
+b3869a89e76c        andersjanmyr/counter   <font color="#FF0000">"/counter-linux"</font>         <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.104</font><font color="#990000">:</font><font color="#993399">32768</font>-<font color="#990000">&gt;</font><font color="#993399">80</font>/tcp         backend2/postgres-counter
+cff69b6f970d        andersjanmyr/counter   <font color="#FF0000">"/counter-linux"</font>         <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.103</font><font color="#990000">:</font><font color="#993399">32768</font>-<font color="#990000">&gt;</font><font color="#993399">80</font>/tcp         backend1/redis-counter
+64af31135c26        jwilder/nginx-proxy    <font color="#FF0000">"/app/docker-entrypoi"</font>   <font color="#993399">443</font>/tcp<font color="#990000">,</font> <font color="#993399">192.168</font><font color="#990000">.</font><font color="#993399">99.102</font><font color="#990000">:</font><font color="#993399">80</font>-<font color="#990000">&gt;</font><font color="#993399">80</font>/tcp   frontend/nginx
+aa1679b3da5c        postgres               <font color="#FF0000">"/docker-entrypoint.s"</font>   Up <font color="#993399">59</font> minutes       <font color="#993399">5432</font>/tcp                             backend2/postgres<font color="#990000">,</font>backend2/postgres-counter/postgres
+ffa41d90f414        redis                  <font color="#FF0000">"/entrypoint.sh redis"</font>   <font color="#993399">6379</font>/tcp                             backend1/redis<font color="#990000">,</font>backend1/redis-counter/redis
+</tt></pre>
+<p>Enjoy the Swarm!</p>
