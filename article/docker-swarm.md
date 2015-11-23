@@ -1,5 +1,7 @@
 # Simple Clustering with Docker Swarm and Nginx
 
+![Docker Swarm](./docker-swarm.png)
+
 Bringing up your own cluster has never been easier. The [recent 1.0 release of
 Docker Swarm](https://blog.docker.com/2015/11/swarm-1-0/) signals that the
 Docker team feel that Swarm is ready for production.
@@ -70,7 +72,7 @@ $ docker-machine create \
 Here I start a couple of machines with an additional `--engine-label`.
 One with `model=high-memory` and one with `model=large-disk`
 
-```
+```sh
 # Create two more nodes named backend1 and backend2, with label public=no
 $ docker-machine create \
   -d virtualbox \
@@ -120,31 +122,36 @@ export DOCKER_MACHINE_NAME="swarm-master"
 # Configure docker to use the swarm-master
 $ eval $(docker-machine env --swarm swarm-master)
 
-# List information about the cluster
+# List information about the cluster, output is trimmed
 $ docker info
 Containers: 4
-Images: 3
+Images: 4
 Role: primary
 Strategy: spread
 Filters: health, port, dependency, affinity, constraint
-Nodes: 3
+Nodes: 4
  backend1: 192.168.99.103:2376
    Containers: 1
    Reserved CPUs: 0 / 1
    Reserved Memory: 0 B / 1.021 GiB
-   Labels: executiondriver=native-0.2, kernelversion=4.1.12-boot2docker, model=high-memory, operatingsystem=Boot2Docker 1.9.0 (TCL 6.4); master : 16e4a2a - Tue Nov  3 19:49:22 UTC 2015, provider=virtualbox, public=no, storagedriver=aufs
+   Labels: model=high-memory, provider=virtualbox, public=no, storagedriver=aufs
+ backend2: 192.168.99.104:2376
+  Containers: 5
+  Reserved CPUs: 0 / 1
+  Reserved Memory: 0 B / 1.021 GiB
+  Labels: model=large-disk, provider=virtualbox, public=no, storagedriver=aufs
  frontend: 192.168.99.102:2376
    Containers: 1
    Reserved CPUs: 0 / 1
    Reserved Memory: 0 B / 1.021 GiB
-   Labels: executiondriver=native-0.2, kernelversion=4.1.12-boot2docker, operatingsystem=Boot2Docker 1.9.0 (TCL 6.4); master : 16e4a2a - Tue Nov  3 19:49:22 UTC 2015, provider=virtualbox, public=yes, storagedriver=aufs
+   Labels: provider=virtualbox, public=yes, storagedriver=aufs
  swarm-master: 192.168.99.101:2376
    Containers: 2
    Reserved CPUs: 0 / 1
    Reserved Memory: 0 B / 1.021 GiB
-   Labels: executiondriver=native-0.2, kernelversion=4.1.12-boot2docker, operatingsystem=Boot2Docker 1.9.0 (TCL 6.4); master : 16e4a2a - Tue Nov  3 19:49:22 UTC 2015, provider=virtualbox, public=no, storagedriver=aufs
-CPUs: 3
-Total Memory: 3.064 GiB
+   Labels: provider=virtualbox, public=no, storagedriver=aufs
+CPUs: 4
+Total Memory: 4.086 GiB
 Name: fa2d554280ff
 ```
 
@@ -156,7 +163,7 @@ proxy to front the whole cluster, like this.
 
 ![The cluster](the-cluster.png)
 
-Alright let's start some containers!
+Alright, let's start some containers!
 
 ### Databases
 
@@ -166,7 +173,7 @@ According to the picture above I want to put the
 it by its labels.
 
 I also want to start a [Postgres](https://hub.docker.com/_/postgres/) container
-on a machine with a large-disk model.
+on a machine with a `constraint:model==large-disk`.
 
 ### Starting Redis
 
@@ -209,6 +216,8 @@ Nice, two running databases on the designated machines.
 
 ### Starting the Reverse Proxy
 
+![Nginx](./nginx.png)
+
 Nginx is one of my favorite building blocks when it comes to building reliable
 web services. Nginx provides an [official Docker image](https://hub.docker.com/_/nginx/),
 but in this case, when I want to automatically configure Nginx when new containers
@@ -226,12 +235,12 @@ if the container has any ports `EXPOSE`d, if it does it also checks  for a
 `VIRTUAL_HOST` environment variable. If both these conditions are fulfilled
 `nginx-proxy` re-configures its Nginx server and reloads the configuration.
 
-When you now access the VIRTUAL_HOST, Nginx proxies the connection to your web
+When you now access the `VIRTUAL_HOST`, Nginx proxies the connection to your web
 service. Cool!
 
 Naturally, you will have to configure your DNS to point to your Nginx server.
-The easiest way to do this is to configure with a wildcard record. Something
-like this:
+The easiest way to do this is to configure all your services to point to it
+with a wildcard record. Something like this:
 
 ```sh
 *.mysite.com     Host (A)    Default     xxx.xxx.xxx.xxx
@@ -246,18 +255,18 @@ redis-counter.docker    192.168.99.102
 postgres-counter.docker 192.168.99.102
 ```
 
-The cool thing is that events works with Swarm so it is possible to use the
-`nginx-proxy` to listen to services that are started on different machines. All
-we have to do is configure it correctly.
+**What is even more cool is that events works with Swarm** and it is possible
+to use the `nginx-proxy` to listen to services that are started on different
+machines. All we have to do is configure it correctly.
 
 #### Starting Nginx-Proxy
 
 `nginx-proxy` is started with configuration read from the docker client
-environment variables.
+environment variables. All the environments variables were automatically
+configured when you configured the docker client to access the Swarm, above.
 
 ```sh
-# Start nginx-proxy configured to listen to swarm events.
-
+# Start nginx-proxy configured to listen to swarm events, published on port 80.
 $ docker run -d --name nginx \
   -v $DOCKER_CERT_PATH:$DOCKER_CERT_PATH \
   -p "80:80" \
@@ -273,12 +282,11 @@ OK, we are almost done. Now it is time to start the web services.
 
 ### Starting Web Services
 
-As a web service I'm going to use a
-[simple counter image](https://hub.docker.com/r/andersjanmyr/counter/)
-it connect to both Postgres and Redis. I want to start the web services on the
-same server as the databases since this allows me to use `--link` to connect to
-the container and it will speed up the data access. To do this I can use
-an affinity constraint: `--env affinity:container==*redis*`
+As a web service I'm going to use a [simple counter image](https://hub.docker.com/r/andersjanmyr/counter/) since it can use both Postgres and Redis as backend.
+I want to start the web services on the same server as the databases since this
+allows me to use `--link` to connect to the container and it will speed up the
+data access. To do this I can use an affinity constraint: `--env
+affinity:container==*redis*`.
 
 ```sh
 # Start a counter close to the container named redis and link to it.
@@ -291,22 +299,26 @@ $ docker run -d --name redis-counter \
   andersjanmyr/counter
 ```
 
-And finally, lets start the `postgres-counter`.
+The affinity constraint is not really necessary since affinity constraints are
+automatically generated by Swarm when `--link` is present as you can see when
+we start the  `postgres-counter`.
 
 ```sh
 # Start a counter close to the container named postgres and link to it.
 $ docker run -d --name postgres-counter \
   -p 80 \
   --link postgres \
-  --env affinity:container==*postgres* \
   --env POSTGRES_URL=postgres://postgres@postgres \
   --env VIRTUAL_HOST=postgres-counter.docker \
   andersjanmyr/counter
 ```
 
-Browser to `http://redis-counter.docker` or `http:/postgres-counter.docker` and
+Browse to [http://redis-counter.docker](http://redis-counter.docker) or
+[http:/postgres-counter.docker](http:/postgres-counter.docker) and
 you should see your services up and running.
 
+![redis-counter](./redis-counter.png)
+![postgres-counter](./postgres-counter.png)
 
 ## Summary
 
@@ -325,5 +337,5 @@ aa1679b3da5c        postgres               "/docker-entrypoint.s"   5432/tcp    
 ffa41d90f414        redis                  "/entrypoint.sh redis"   6379/tcp                             backend1/redis,backend1/redis-counter/redis
 ```
 
-Enjoy the Swarm!
+May the Swarm be with you! :D
 
