@@ -102,6 +102,9 @@ $ docker ps -l
 # List ID of latest container
 $ docker ps -l -q
 
+# Stop the last container
+$ docker stop -ia $(docker ps -l -q)
+
 # Start and attach to the stopped container
 $ docker start -ia $(docker ps -l -q)
 
@@ -144,8 +147,8 @@ $ docker run -d -p 80:80 \
   --name nginx \
   jwilder/nginx-proxy
 
-# Browse to the container
-$ open docker
+# Browse to the container http://docker
+$ open http://docker # open only works on mac, copy-paste in other browsers
 
 # $ Start a counter web app with a VIRTUAL_HOST environment
 # variable set to memory-counter.docker and port published on 8081
@@ -156,7 +159,7 @@ $ docker run -d \
   andersjanmyr/counter
 
 # Browse to the container, click the counter or the digit
-$ open memory-counter.docker # or docker:8081
+$ open http://memory-counter.docker # or http://docker:8081
 
 # $ Start a counter web app linked to redis with a VIRTUAL_HOST environment
 # variable set to redis-counter.docker and port published on 8082
@@ -167,7 +170,7 @@ $ docker run -d --link redis -e REDIS_URL=redis:6379 \
   andersjanmyr/counter
 
 # Browse to the container, click the counter or the digit
-$ open redis-counter.docker # or docker:8082
+$ open http://redis-counter.docker # or http://docker:8082
 
 # $ Start a counter web app linked to postgres with a VIRTUAL_HOST environment
 # variable set to postgres-counter.docker and port published on 8083
@@ -178,7 +181,7 @@ $ docker run -d --link postgres \
   andersjanmyr/counter
 
 # Browse to the container, click the counter or the digit
-$ open postgres-counter.docker # or docker:8083
+$ open http://postgres-counter.docker # or http://docker:8083
 
 # $ Start a counter web app linked to mongo with a VIRTUAL_HOST environment
 # variable set to mongo-counter.docker and port published on 8084
@@ -189,7 +192,7 @@ $ docker run -d --link mongo \
   andersjanmyr/counter
 
 # Browse to the container, click the counter or the digit
-$ open mongo-counter.docker # or docker:8084
+$ open http://mongo-counter.docker # or http://docker:8084
 
 # Check that the containers are running
 $ docker ps
