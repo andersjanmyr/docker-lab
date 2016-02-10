@@ -465,7 +465,7 @@ image from a Dockerfile.
 ```
 $ mkdir mydir
 $ cd mydir
-$ echo 'FROM: debian' > Dockerfile
+$ echo 'FROM debian' > Dockerfile
 $ docker build -t yourname:atag .
 ```
 
